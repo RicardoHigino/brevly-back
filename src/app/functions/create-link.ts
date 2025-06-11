@@ -1,4 +1,3 @@
-import { env } from "@/env"
 import { db } from "@/infra/db"
 import { schema } from "@/infra/db/schemas"
 import { makeLeft, makeRight } from "@/infra/shared/either"
@@ -15,10 +14,10 @@ type CreateLinkInput = z.input<typeof requestInput>
 export const createLink = async (input: CreateLinkInput) => {
   let { originalUrl, shortUrl } = requestInput.parse(input)
 
-  let isShortUrlValid = shortUrl.startsWith(env.APP_URL)
+  let isShortUrlValid = shortUrl.startsWith('https://') || shortUrl.startsWith('http://')
 
   if (!isShortUrlValid) {
-    shortUrl = `${env.APP_URL}/${shortUrl.replace(/^\//, '')}`
+    return makeLeft(new Error('URL inválida'))
   }
 
   const alreadyExists = await db.select().from(schema.encurtedLinks).where(eq(schema.encurtedLinks.shortUrl, shortUrl)).limit(1)
